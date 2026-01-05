@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infográfico do GitHub - João Claudiano</title>
+    <!-- Biblioteca Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #0d1117, #161b22);
+            color: #c9d1d9;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            border-bottom: 1px solid #30363d;
+        }
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #58a6ff, #bc8cff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            color: #8b949e;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+        }
+        .card h2 {
+            color: #58a6ff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.1rem;
+            color: #8b949e;
+        }
+        .error {
+            color: #f85149;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #8b949e;
+            font-size: 0.9rem;
+            border-top: 1px solid #30363d;
+        }
+        a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .highlight {
+            background: rgba(88, 166, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Infográfico de Desenvolvimento</h1>
+            <p class="subtitle">Dados dinâmicos dos repositórios públicos de <span class="highlight">JoaoClaudiano</span> no GitHub</p>
+        </header>
+
+        <main>
+            <div class="stats-grid">
+                <!-- Card 1: Gráfico de Linguagens -->
+                <section class="card">
+                    <h2>🗣️ Linguagens mais Usadas</h2>
+                    <div class="chart-container">
+                        <canvas id="languageChart"></canvas>
+                    </div>
+                    <p id="languageDesc" style="margin-top: 15px; font-size: 0.95rem; color: #8b949e;">
+                        <!-- A descrição será preenchida por JavaScript -->
+                    </p>
+                </section>
+
+                <!-- Card 2: Estatísticas de Repositórios -->
+                <section class="card">
+                    <h2>📦 Resumo dos Repositórios</h2>
+                    <div id="repoStats" class="loading">
+                        Carregando estatísticas...
+                    </div>
+                </section>
+            </div>
+
+            <!-- Card 3: Lista de Repositórios -->
+            <section class="card" style="grid-column: 1 / -1;">
+                <h2>💎 Repositórios em Destaque</h2>
+                <div id="repoList" class="loading">
+                    Carregando lista de repositórios...
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Dados obtidos via <a href="https://docs.github.com/rest" target="_blank">GitHub REST API</a> • Atualizados em tempo real</p>
+            <p>Infográfico criado com <a href="https://www.chartjs.org/" target="_blank">Chart.js</a> • <a href="https://github.com/JoaoClaudiano" target="_blank">Ver perfil completo</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // ================= CONFIGURAÇÃO =================
+        const GITHUB_USERNAME = 'JoaoClaudiano'; // Substitua se necessário
+
+        // ================= ELEMENTOS DA PÁGINA =================
+        const languageChartCanvas = document.getElementById('languageChart');
+        const languageDescEl = document.getElementById('languageDesc');
+        const repoStatsEl = document.getElementById('repoStats');
+        const repoListEl = document.getElementById('repoList');
+
+        // ================= FUNÇÕES PRINCIPAIS =================
+
+        /**
+         * Função principal que busca todos os dados e atualiza a página.
+         */
+        async function loadAllData() {
+            try {
+                // 1. Busca lista de repositórios
+                const repos = await fetchGitHubRepos();
+                if (!repos || repos.length === 0) {
+                    throw new Error('Nenhum repositório público encontrado.');
+                }
+
+                // 2. Calcula estatísticas básicas
+                updateRepoStats(repos);
+
+                // 3. Busca e soma o uso de linguagens de TODOS os repositórios
+                const languageData = await fetchAllLanguages(repos);
+                renderLanguageChart(languageData);
+
+                // 4. Exibe lista de repositórios
+                renderRepoList(repos);
+
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                showError(error.message);
+            }
+        }
+
+        /**
+         * Busca a lista de repositórios públicos do usuário.
+         */
+        async function fetchGitHubRepos() {
+            const response = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&direction=desc`);
+            if (!response.ok) throw new Error(`Erro API GitHub: ${response.status}`);
+            return await response.json();
+        }
+
+        /**
+         * Para cada repositório, busca as linguagens e soma os bytes.
+         */
+        async function fetchAllLanguages(repos) {
+            const languageMap = {};
+
+            // Itera por cada repositório (limitado a 10 para performance)
+            for (const repo of repos.slice(0, 10)) {
+                try {
+                    const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${repo.name}/languages`);
+                    if (!response.ok) continue; // Pula se houver erro
+
+                    const repoLanguages = await response.json();
+                    // Soma os bytes de cada linguagem
+                    for (const [lang, bytes] of Object.entries(repoLanguages)) {
+                        languageMap[lang] = (languageMap[lang] || 0) + bytes;
+                    }
+                } catch (err) {
+                    console.warn(`Não foi possível buscar linguagens do repositório ${repo.name}:`, err);
+                }
+            }
+
+            // Converte o mapa em um array ordenado
+            return Object.entries(languageMap)
+                .map(([name, bytes]) => ({ name, bytes }))
+                .sort((a, b) => b.bytes - a.bytes);
+        }
+
+        /**
+         * Atualiza o card com estatísticas dos repositórios.
+         */
+        function updateRepoStats(repos) {
+            const totalStars = repos.reduce((sum, repo) => sum + repo.stargazers_count, 0);
+            const totalForks = repos.reduce((sum, repo) => sum + repo.forks_count, 0);
+            const latestRepo = repos[0]; // Já ordenado por atualização
+
+            repoStatsEl.innerHTML = `
+                <p><strong>${repos.length}</strong> repositórios públicos</p>
+                <p><strong>${totalStars}</strong> estrelas no total</p>
+                <p><strong>${totalForks}</strong> forks no total</p>
+                <p>Última atualização: <a href="${latestRepo.html_url}" target="_blank">${latestRepo.name}</a></p>
+            `;
+            repoStatsEl.classList.remove('loading');
+        }
+
+        /**
+         * Cria o gráfico de pizza das linguagens.
+         */
+        function renderLanguageChart(languageData) {
+            if (!languageData || languageData.length === 0) {
+                languageDescEl.textContent = 'Não foi possível carregar dados de linguagens.';
+                return;
+            }
+
+            // Prepara os dados para o Chart.js
+            const labels = languageData.map(item => item.name);
+            const data = languageData.map(item => item.bytes);
+            const backgroundColors = generateColors(languageData.length);
+
+            // Cria a descrição textual
+            const topLang = languageData[0];
+            languageDescEl.textContent = `A linguagem mais usada é ${topLang.name}, com ${formatBytes(topLang.bytes)} de código.`;
+
+            // Renderiza o gráfico
+            new Chart(languageChartCanvas, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: '#0d1117',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#c9d1d9' } },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const value = context.raw;
+                                    const total = data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${formatBytes(value)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        /**
+         * Exibe a lista dos repositórios mais recentes.
+         */
+        function renderRepoList(repos) {
+            const topRepos = repos.slice(0, 5); // Mostra os 5 mais recentes
+            repoListEl.innerHTML = topRepos.map(repo => `
+                <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #30363d;">
+                    <h3 style="margin-bottom: 5px;">
+                        <a href="${repo.html_url}" target="_blank">${repo.name}</a>
+                        ${repo.fork ? '<small>(Fork)</small>' : ''}
+                    </h3>
+                    <p style="color: #8b949e; margin-bottom: 8px;">${repo.description || 'Sem descrição'}</p>
+                    <div style="display: flex; gap: 15px; font-size: 0.9rem;">
+                        <span>⭐ ${repo.stargazers_count}</span>
+                        <span>🍴 ${repo.forks_count}</span>
+                        <span>📅 ${new Date(repo.updated_at).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                </div>
+            `).join('');
+            repoListEl.classList.remove('loading');
+        }
+
+        // ================= FUNÇÕES AUXILIARES =================
+
+        /**
+         * Gera um array de cores para o gráfico.
+         */
+        function generateColors(count) {
+            const palette = ['#58a6ff', '#bc8cff', '#238636', '#da3633', '#db6d28', '#e3b341', '#8b949e', '#3fb950'];
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                colors.push(palette[i % palette.length]);
+            }
+            return colors;
+        }
+
+        /**
+         * Formata bytes para uma string legível (KB, MB).
+         */
+        function formatBytes(bytes) {
+            if (bytes >= 1024 * 1024) {
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            } else if (bytes >= 1024) {
+                return (bytes / 1024).toFixed(1) + ' KB';
+            } else {
+                return bytes + ' bytes';
+            }
+        }
+
+        /**
+         * Exibe uma mensagem de erro na página.
+         */
+        function showError(message) {
+            const errorHtml = `<div class="error"><p>⚠️ Ocorreu um erro: ${message}</p><p>Verifique o console para detalhes.</p></div>`;
+            document.querySelector('main').innerHTML = errorHtml;
+        }
+
+        // ================= INICIALIZAÇÃO =================
+        // Inicia o carregamento dos dados quando a página carrega
+        document.addEventListener('DOMContentLoaded', loadAllData);
+    </script>
+</body>
+</html>
