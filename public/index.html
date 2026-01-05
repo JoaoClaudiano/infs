@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Dev - João Claudiano</title>
+    <!-- Biblioteca AntV Infographic para gráficos SVG profissionais[citation:1] -->
+    <script src="https://unpkg.com/@antv/infographic/dist/infographic.min.js"></script>
+    <!-- Chart.js para gráficos extras -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Seus estilos -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <header class="card card-wide">
+            <h1>🚀 Dashboard de Atividade - João Claudiano</h1>
+            <p>Análise visual em tempo real dos repositórios GitHub e tempo de codificação.</p>
+            <div id="header-stats">Carregando...</div>
+        </header>
+
+        <div class="card card-wide">
+            <h2><span class="icon">🗣️</span> Ecossistema de Linguagens (AntV)</h2>
+            <div id="antv-language-chart"></div>
+            <p class="chart-desc">Distribuição gerada pelo <strong>AntV Infographic</strong>, renderizada em SVG de alta qualidade[citation:1].</p>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">📊</span> Cartões do GitHub</h2>
+            <!-- URLs da SUA instância hospedada. Substitua 'SEU_DOMINIO' -->
+            <img src="https://SEU_DOMINIO.railway.app/api?username=JoaoClaudiano&show_icons=true&theme=radical" alt="Estatísticas GitHub" class="github-card">
+            <img src="https://SEU_DOMINIO.railway.app/api/top-langs/?username=JoaoClaudiano&layout=compact&theme=radical" alt="Linguagens Top" class="github-card">
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">📈</span> Atividade Semanal</h2>
+            <canvas id="weekly-activity-chart"></canvas>
+        </div>
+
+        <div class="card card-wide">
+            <h2><span class="icon">⏳</span> Foco de Codificação (WakaTime)</h2>
+            <div id="wakatime-container">
+                <p>Carregando dados dos últimos 7 dias...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
