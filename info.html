@@ -1,38 +1,48 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dev Analytics | JoaoClaudiano</title>
+    <title>Premium Dev Analytics | JoaoClaudiano</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
+            /* Tema Escuro (Padrão) */
             --bg-deep: #080a0f;
             --glass-bg: rgba(22, 27, 34, 0.7);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --accent-primary: #7c4dff; /* Roxo Neon */
-            --accent-secondary: #00e5ff; /* Ciano Neon */
             --text-main: #f0f6fc;
             --text-dim: #8b949e;
+            --accent-primary: #7c4dff;
+            --accent-secondary: #00e5ff;
             --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        [data-theme="light"] {
+            --bg-deep: #f0f2f5;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --text-main: #1a1a1a;
+            --text-dim: #4a4a4a;
+            --accent-primary: #5c30d3;
+            --accent-secondary: #0097a7;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.3s, color 0.3s; }
 
         body {
             background-color: var(--bg-deep);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(124, 77, 255, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.05) 0%, transparent 40%);
             color: var(--text-main);
             font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow-x: hidden;
             padding: 20px;
+            line-height: 1.6;
         }
 
         .container {
@@ -41,10 +51,10 @@
             display: grid;
             grid-template-columns: repeat(12, 1fr);
             gap: 20px;
-            animation: fadeIn 1s ease-out;
+            animation: fadeIn 0.8s ease-out;
         }
 
-        /* Efeito de Vidro (Glassmorphism) */
+        /* Glassmorphism Card */
         .glass-card {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -53,209 +63,210 @@
             border-radius: 24px;
             padding: 25px;
             box-shadow: var(--card-shadow);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .glass-card:hover {
-            border-color: rgba(124, 77, 255, 0.3);
-            transform: translateY(-5px);
-        }
-
-        /* Header e Perfil */
-        .header-card { grid-column: span 12; display: flex; align-items: center; gap: 30px; }
-        
-        .profile-img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid var(--accent-primary);
-            padding: 5px;
-        }
-
-        .profile-info h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 5px; }
-        .profile-info p { color: var(--text-dim); font-size: 1rem; }
-
-        /* Grade de Cards */
-        .card-medium { grid-column: span 6; }
-        .card-small { grid-column: span 4; }
-        .card-large { grid-column: span 8; }
-
-        @media (max-width: 900px) {
-            .card-medium, .card-small, .card-large { grid-column: span 12; }
-        }
-
-        .card-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-dim);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .card-title i { color: var(--accent-secondary); }
-
-        /* Estatísticas Numéricas */
-        .big-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #fff, var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stat-label { color: var(--text-dim); font-size: 0.85rem; margin-top: 5px; }
-
-        /* Gráficos */
-        .chart-container { width: 100%; height: 280px; position: relative; }
-
-        /* Lista de Repos */
-        .repo-item {
+        /* Top Navigation / Controls */
+        .nav-controls {
+            grid-column: span 12;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .repo-item:last-child { border: none; }
-        .repo-name { font-weight: 600; color: var(--accent-secondary); text-decoration: none; font-size: 0.95rem; }
-        .repo-meta { font-size: 0.8rem; color: var(--text-dim); }
-
-        /* Animações */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
-        .loading-shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
+        .theme-toggle, .glass-btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-main);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
         }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        .glass-btn:hover { background: var(--accent-primary); color: white; }
+
+        /* Profile Section */
+        .header-card { grid-column: span 12; display: flex; flex-wrap: wrap; gap: 30px; align-items: center; }
+        .profile-img { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--accent-primary); padding: 5px; }
+        .profile-info { flex: 1; min-width: 300px; }
+        .profile-info h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; }
+        
+        .social-row { display: flex; gap: 10px; margin-top: 15px; }
+
+        /* Grid System */
+        .col-4 { grid-column: span 4; }
+        .col-8 { grid-column: span 8; }
+        .col-12 { grid-column: span 12; }
+
+        @media (max-width: 900px) { .col-4, .col-8 { grid-column: span 12; } }
+
+        .card-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .card-title i { color: var(--accent-secondary); }
+
+        /* Stats */
+        .stats-row { display: flex; gap: 25px; margin-top: 20px; }
+        .big-number { font-size: 2rem; font-weight: 800; color: var(--accent-secondary); }
+        .stat-label { font-size: 0.8rem; color: var(--text-dim); }
+
+        /* Tech Stack Icons */
+        .tech-stack-grid { display: flex; flex-wrap: wrap; gap: 20px; font-size: 2.5rem; justify-content: center; }
+        .tech-stack-grid i { transition: transform 0.3s; cursor: help; }
+        .tech-stack-grid i:hover { transform: scale(1.2) rotate(5deg); color: var(--accent-primary); }
+
+        /* Repo List */
+        .repo-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid var(--glass-border);
+            transition: 0.3s;
+        }
+        .repo-item:hover { background: rgba(124, 77, 255, 0.05); }
+        .repo-name { font-weight: 700; color: var(--accent-secondary); text-decoration: none; }
+        
+        /* Loading States */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        #filter-info {
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            margin-bottom: 10px;
+            font-weight: 700;
+            display: none;
+        }
 
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div class="nav-controls col-12">
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="theme-icon"></i> <span id="theme-text">Dark Mode</span>
+            </button>
+            <div style="display: flex; gap: 10px;">
+                <a href="https://linkedin.com" target="_blank" class="glass-btn"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                <a href="#" class="glass-btn" style="background: var(--accent-primary); color: white;"><i class="fas fa-envelope"></i> Contato</a>
+            </div>
+        </div>
+
         <header class="glass-card header-card">
             <img id="user-avatar" class="profile-img" src="https://github.com/identicons/j.png" alt="Avatar">
             <div class="profile-info">
-                <h1 id="user-name">Carregando...</h1>
-                <p id="user-bio">Analista de Dados & Desenvolvedor Full Stack</p>
-                <div style="margin-top: 15px; display: flex; gap: 20px;">
-                    <div><span class="big-number" id="total-repos">0</span><div class="stat-label">Repos</div></div>
-                    <div><span class="big-number" id="total-stars">0</span><div class="stat-label">Estrelas</div></div>
-                    <div><span class="big-number" id="user-followers">0</span><div class="stat-label">Seguidores</div></div>
+                <h1 id="user-name">João Claudiano</h1>
+                <p id="user-bio">Carregando bio do GitHub...</p>
+                <div class="stats-row">
+                    <div><div class="big-number" id="total-repos">0</div><div class="stat-label">Projetos</div></div>
+                    <div><div class="big-number" id="total-stars">0</div><div class="stat-label">Estrelas</div></div>
+                    <div><div class="big-number" id="user-followers">0</div><div class="stat-label">Seguidores</div></div>
                 </div>
             </div>
         </header>
 
-        <section class="glass-card card-small">
-            <h3 class="card-title"><i class="fa-solid fa-microchip"></i> Tech Stack Balance</h3>
-            <div class="chart-container">
-                <canvas id="radarChart"></canvas>
+        <section class="glass-card col-4">
+            <h3 class="card-title"><i class="fas fa-bullseye"></i> Especialidades</h3>
+            <div style="height: 250px;"><canvas id="radarChart"></canvas></div>
+        </section>
+
+        <section class="glass-card col-4">
+            <h3 class="card-title"><i class="fas fa-chart-pie"></i> Linguagens (Clique para filtrar)</h3>
+            <div style="height: 250px;"><canvas id="donutChart"></canvas></div>
+        </section>
+
+        <section class="glass-card col-4">
+            <h3 class="card-title"><i class="fas fa-layer-group"></i> My Tech Stack</h3>
+            <div class="tech-stack-grid">
+                <i class="devicon-python-plain colored" title="Python"></i>
+                <i class="devicon-javascript-plain colored" title="JavaScript"></i>
+                <i class="devicon-pandas-plain colored" title="Pandas"></i>
+                <i class="devicon-mysql-plain colored" title="MySQL"></i>
+                <i class="devicon-html5-plain colored" title="HTML5"></i>
+                <i class="devicon-css3-plain colored" title="CSS3"></i>
+                <i class="devicon-git-plain colored" title="Git"></i>
+                <i class="devicon-react-original colored" title="React"></i>
             </div>
         </section>
 
-        <section class="glass-card card-small">
-            <h3 class="card-title"><i class="fa-solid fa-code"></i> Top Linguagens</h3>
-            <div class="chart-container">
-                <canvas id="donutChart"></canvas>
-            </div>
-        </section>
-
-        <section class="glass-card card-small">
-            <h3 class="glass-card-title card-title"><i class="fa-solid fa-fire"></i> Projetos Populares</h3>
-            <div class="chart-container">
-                <canvas id="barChart"></canvas>
-            </div>
-        </section>
-
-        <section class="glass-card card-large">
-            <h3 class="card-title"><i class="fa-solid fa-folder-open"></i> Repositórios em Destaque</h3>
+        <section class="glass-card col-12">
+            <h3 class="card-title"><i class="fas fa-code-branch"></i> Projetos Recentes</h3>
+            <div id="filter-info">Exibindo apenas repositórios em: <span id="active-filter"></span> | <button onclick="resetFilter()" style="background: none; border: none; color: var(--accent-secondary); cursor: pointer; text-decoration: underline;">Limpar Filtro</button></div>
             <div id="repo-list">
                 </div>
         </section>
-
-        <section class="glass-card card-small" style="display: flex; flex-direction: column; justify-content: center;">
-            <h3 class="card-title"><i class="fa-solid fa-clock"></i> Live Coding Stats</h3>
-            <img src="https://github-readme-stats.vercel.app/api/wakatime?username=JoaoClaudiano&theme=transparent&color_accent=00e5ff&hide_border=true" style="width: 100%; filter: drop-shadow(0 0 10px rgba(0,229,255,0.2));" alt="Wakatime">
-        </section>
-
     </div>
 
     <script>
         const USER = 'JoaoClaudiano';
+        let allRepos = [];
+        let donutChart, radarChart;
 
-        async function initDashboard() {
+        // --- INICIALIZAÇÃO ---
+        async function init() {
             try {
-                // 1. Dados do Usuário
                 const userRes = await fetch(`https://api.github.com/users/${USER}`);
                 const userData = await userRes.json();
                 
                 document.getElementById('user-avatar').src = userData.avatar_url;
                 document.getElementById('user-name').innerText = userData.name || USER;
-                document.getElementById('user-bio').innerText = userData.bio || 'Developer';
+                document.getElementById('user-bio').innerText = userData.bio || 'Data Analyst & Software Developer';
                 document.getElementById('user-followers').innerText = userData.followers;
                 document.getElementById('total-repos').innerText = userData.public_repos;
 
-                // 2. Dados dos Repositórios
                 const reposRes = await fetch(`https://api.github.com/users/${USER}/repos?sort=updated&per_page=100`);
-                const repos = await reposRes.json();
+                allRepos = await reposRes.json();
 
                 let stars = 0;
                 let langs = {};
-                repos.forEach(r => {
+                allRepos.forEach(r => {
                     stars += r.stargazers_count;
                     if(r.language) langs[r.language] = (langs[r.language] || 0) + 1;
                 });
                 document.getElementById('total-stars').innerText = stars;
 
-                // Renderizar Componentes
-                renderDonut(langs);
-                renderRadar(); // Dados baseados no seu perfil GitHub
-                renderBar(repos.slice(0, 5));
-                renderRepoList(repos.slice(0, 6));
-
-            } catch (e) { console.error("Erro ao carregar:", e); }
+                renderCharts(langs);
+                renderRepos(allRepos);
+            } catch (e) { console.error("Erro na API:", e); }
         }
 
-        function renderDonut(langs) {
-            const ctx = document.getElementById('donutChart');
-            new Chart(ctx, {
+        // --- RENDERIZAR GRÁFICOS ---
+        function renderCharts(langs) {
+            const donutCtx = document.getElementById('donutChart');
+            donutChart = new Chart(donutCtx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(langs),
                     datasets: [{
                         data: Object.values(langs),
                         backgroundColor: ['#7c4dff', '#00e5ff', '#ff4081', '#76ff03', '#ffeb3b'],
-                        borderWidth: 0,
-                        hoverOffset: 20
+                        borderWidth: 0
                     }]
                 },
                 options: {
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { color: '#8b949e', usePointStyle: true, padding: 20 } } },
-                    cutout: '75%'
+                    onClick: (evt, item) => {
+                        if(item.length > 0) {
+                            const index = item[0].index;
+                            filterByLanguage(Object.keys(langs)[index]);
+                        }
+                    },
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: getTextColor(), usePointStyle: true } } 
+                    }
                 }
             });
-        }
 
-        function renderRadar() {
-            const ctx = document.getElementById('radarChart');
-            new Chart(ctx, {
+            const radarCtx = document.getElementById('radarChart');
+            radarChart = new Chart(radarCtx, {
                 type: 'radar',
                 data: {
-                    labels: ['Backend', 'Frontend', 'Database', 'Mobile', 'DevOps', 'Data Science'],
+                    labels: ['Data Science', 'Automation', 'Frontend', 'Backend', 'Viz', 'SQL'],
                     datasets: [{
-                        label: 'Experiência',
-                        data: [85, 70, 75, 40, 60, 50],
-                        fill: true,
+                        label: 'Habilidade',
+                        data: [90, 85, 70, 75, 80, 85],
                         backgroundColor: 'rgba(124, 77, 255, 0.2)',
                         borderColor: '#7c4dff',
                         pointBackgroundColor: '#00e5ff'
@@ -265,9 +276,8 @@
                     maintainAspectRatio: false,
                     scales: {
                         r: {
-                            angleLines: { color: 'rgba(255,255,255,0.05)' },
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            pointLabels: { color: '#8b949e' },
+                            grid: { color: 'rgba(128,128,128,0.2)' },
+                            pointLabels: { color: getTextColor() },
                             ticks: { display: false }
                         }
                     },
@@ -276,45 +286,57 @@
             });
         }
 
-        function renderBar(topRepos) {
-            const ctx = document.getElementById('barChart');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: topRepos.map(r => r.name.substring(0,10)),
-                    datasets: [{
-                        data: topRepos.map(r => r.stargazers_count + 1), // +1 apenas para visualização se 0
-                        backgroundColor: '#00e5ff',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: { 
-                        y: { display: false },
-                        x: { ticks: { color: '#8b949e' }, grid: { display: false } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        function renderRepoList(repos) {
-            const container = document.getElementById('repo-list');
-            container.innerHTML = repos.map(r => `
+        // --- LISTA DE REPOS ---
+        function renderRepos(repos) {
+            const list = document.getElementById('repo-list');
+            list.innerHTML = repos.slice(0, 10).map(r => `
                 <div class="repo-item">
                     <div>
                         <a href="${r.html_url}" target="_blank" class="repo-name">${r.name}</a>
-                        <div class="repo-meta">${r.language || 'Code'} • Updated ${new Date(r.updated_at).toLocaleDateString()}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim)">${r.language || 'Geral'} • Atualizado em ${new Date(r.updated_at).toLocaleDateString()}</div>
                     </div>
-                    <div class="repo-meta">
-                        <i class="fa-regular fa-star"></i> ${r.stargazers_count}
-                    </div>
+                    <div style="font-weight: 800; color: var(--accent-secondary)"><i class="fas fa-star"></i> ${r.stargazers_count}</div>
                 </div>
             `).join('');
         }
 
-        window.onload = initDashboard;
+        // --- FILTROS ---
+        function filterByLanguage(lang) {
+            const filtered = allRepos.filter(r => r.language === lang);
+            document.getElementById('filter-info').style.display = 'block';
+            document.getElementById('active-filter').innerText = lang;
+            renderRepos(filtered);
+        }
+
+        function resetFilter() {
+            document.getElementById('filter-info').style.display = 'none';
+            renderRepos(allRepos);
+        }
+
+        // --- TEMA E UX ---
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            
+            document.getElementById('theme-icon').className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            document.getElementById('theme-text').innerText = next === 'dark' ? 'Dark Mode' : 'Light Mode';
+            
+            // Atualizar cores dos gráficos
+            setTimeout(() => {
+                donutChart.options.plugins.legend.labels.color = getTextColor();
+                radarChart.options.scales.r.pointLabels.color = getTextColor();
+                donutChart.update();
+                radarChart.update();
+            }, 100);
+        }
+
+        function getTextColor() {
+            return document.documentElement.getAttribute('data-theme') === 'dark' ? '#8b949e' : '#4a4a4a';
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
