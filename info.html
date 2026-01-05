@@ -2,136 +2,530 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Infográfico Dev - João Claudiano</title>
-    <!-- 1. AntV Infographic (via CDN) -->
-    <script src="https://unpkg.com/@antv/infographic/dist/infographic.min.js"></script>
-    <!-- 2. Chart.js para gráficos complementares -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Dev Avançado - João Claudiano</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
-        /* Estilos Profissionais (resumido) */
-        :root { --bg-primary: #0d1117; --bg-card: #161b22; --text-primary: #c9d1d9; --accent: #58a6ff; }
-        body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Segoe UI', sans-serif; }
-        .dashboard { max-width: 1400px; margin: auto; padding: 2rem; display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
-        .card { background: var(--bg-card); border-radius: 16px; padding: 1.5rem; grid-column: span 6; border: 1px solid #30363d; box-shadow: 0 8px 24px rgba(1, 4, 9, 0.8); }
-        .card-wide { grid-column: span 12; }
-        .card-title { color: var(--accent); border-bottom: 2px solid #238636; padding-bottom: 0.75rem; margin-bottom: 1.5rem; font-size: 1.5rem; }
-        #antv-container, #chartjs-container { height: 400px; width: 100%; }
-        .stat-highlight { font-size: 2.5rem; font-weight: bold; background: linear-gradient(90deg, #58a6ff, #bc8cff); -webkit-background-clip: text; color: transparent; }
-        @media (max-width: 1100px) { .card { grid-column: span 12; } }
+        /* Variáveis CSS para um tema escuro profissional */
+        :root {
+            --bg-primary: #0d1117; /* GitHub Dark BG */
+            --bg-card: #161b22; /* GitHub Dark Card */
+            --text-primary: #c9d1d9; /* Light Gray Text */
+            --text-secondary: #8b949e; /* Darker Gray Text */
+            --accent-blue: #58a6ff; /* GitHub Blue */
+            --accent-green: #238636; /* GitHub Green */
+            --border-color: #30363d; /* Dark Border */
+            --shadow-color: rgba(1, 4, 9, 0.8); /* Dark Shadow */
+            --font-stack: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Reset básico e tipografia */
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-stack);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Layout do Dashboard */
+        .dashboard {
+            max-width: 1300px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.8rem;
+        }
+
+        /* Estilo dos Cartões */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            grid-column: span 6;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px var(--shadow-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px var(--shadow-color);
+        }
+
+        .card-wide {
+            grid-column: span 12;
+        }
+
+        .card-title {
+            color: var(--accent-blue);
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--accent-green);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title i {
+            margin-right: 10px;
+            color: var(--text-secondary);
+        }
+
+        /* Estilos específicos para conteúdo */
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--accent-blue);
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            background: rgba(88, 166, 255, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        .stat-item .value {
+            font-size: 2.8rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--accent-blue), #bc8cff);
+            -webkit-background-clip: text;
+            color: transparent;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-item .label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        #chart-container, #chartjs-container, #lang-chart-container {
+            position: relative;
+            height: 350px; /* Altura fixa para gráficos */
+            width: 100%;
+            display: flex; /* Para centralizar o spinner */
+            justify-content: center;
+            align-items: center;
+        }
+
+        #wakatime-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 1rem;
+        }
+
+        /* Spinner de carregamento */
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--accent-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #ff7b72; /* Um vermelho suave para erros */
+            font-weight: bold;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        /* Responsividade */
+        @media (max-width: 1100px) {
+            .card {
+                grid-column: span 12;
+            }
+            .dashboard {
+                margin: 2rem auto;
+                padding: 0 1rem;
+            }
+            h1 { font-size: 2.5rem; }
+            .card-title { font-size: 1.5rem; }
+            .stat-item .value { font-size: 2.2rem; }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard {
+                gap: 1rem;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+            h1 { font-size: 2rem; }
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="dashboard">
-        <!-- CARD 1: Título e Dados Principais -->
         <header class="card card-wide">
-            <h1>📊 Dashboard de Desenvolvimento</h1>
-            <p>Análise visual dos repositórios públicos de <strong>JoaoClaudiano</strong></p>
-            <div id="header-stats">Carregando estatísticas gerais...</div>
+            <h1><i class="fas fa-chart-line"></i> Dashboard de Desenvolvimento</h1>
+            <p>Visão geral interativa e profissional dos repositórios públicos de <strong>JoaoClaudiano</strong>.</p>
+            <div id="header-stats" class="stat-grid">
+                <div class="spinner"></div>
+            </div>
         </header>
 
-        <!-- CARD 2: Gráfico AntV (Linguagens) -->
+        <section class="card">
+            <h2 class="card-title"><i class="fas fa-code"></i> Distribuição de Linguagens</h2>
+            <div id="lang-chart-container">
+                <canvas id="languageChart"></canvas>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2 class="card-title"><i class="fas fa-project-diagram"></i> Atividade por Repositório</h2>
+            <div id="activity-chart-container">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2 class="card-title"><i class="fas fa-bolt"></i> Métricas Rápidas</h2>
+            <div id="quick-metrics" class="stat-grid">
+                <div class="spinner"></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2 class="card-title"><i class="fas fa-clock"></i> Tempo de Codificação</h2>
+            <img id="wakatime-img" src="https://github-readme-stats.vercel.app/api/wakatime?username=JoaoClaudiano&theme=dark&hide_title=true&hide_border=true&layout=compact&v=2" alt="WakaTime Stats" style="width:100%;">
+            <p style="color:var(--text-secondary); font-size:0.9rem; margin-top:1rem;">Dados do WakaTime. Pode levar alguns segundos para carregar.</p>
+        </section>
+
         <section class="card card-wide">
-            <h2 class="card-title">🗣️ Distribuição de Linguagens (AntV)</h2>
-            <div id="antv-container"></div>
-            <p>Gráfico gerado pelo framework AntV Infographic para visualizações profissionais.</p>
-        </section>
-
-        <!-- CARD 3: Gráfico Chart.js (Atividade) -->
-        <section class="card">
-            <h2 class="card-title">📈 Atividade por Repositório</h2>
-            <div id="chartjs-container"><canvas id="activityChart"></canvas></div>
-        </section>
-
-        <!-- CARD 4: Métricas Rápidas -->
-        <section class="card">
-            <h2 class="card-title">⚡ Métricas</h2>
-            <div id="quick-metrics">Carregando...</div>
-        </section>
-
-        <!-- CARD 5: WakaTime -->
-        <section class="card">
-            <h2 class="card-title">⏳ Tempo de Codificação</h2>
-            <img id="wakatime-img" src="https://github-readme-stats.vercel.app/api/wakatime?username=24411d3f-4788-4d77-b413-800dff61f4fc&theme=dark&v=2" alt="WakaTime Stats" style="width:100%;">
-            <p>Dados do WakaTime. Atualize a página se não aparecerem.</p>
+            <h2 class="card-title"><i class="fas fa-star"></i> Top Repositórios</h2>
+            <div id="top-repos">
+                <div class="spinner"></div>
+            </div>
         </section>
     </div>
 
     <script>
-        // CONFIGURAÇÃO
-        const GITHUB_USER = 'JoaoClaudiano';
-        const GITHUB_STATS_API = 'https://github-readme-stats.vercel.app/api';
+        // Registrar o plugin Data Labels globalmente para Chart.js
+        Chart.register(ChartDataLabels);
 
-        // 1. BUSCAR DADOS PRINCIPAIS DO GITHUB
+        const GITHUB_USER = 'JoaoClaudiano'; // Substitua pelo seu username do GitHub!
+        const GITHUB_API_URL = `https://api.github.com/users/${GITHUB_USER}`;
+        const GITHUB_REPOS_API_URL = `https://api.github.com/users/${GITHUB_USER}/repos?per_page=100`; // Busca mais repos
+
+        // Cores vibrantes e elegantes para os gráficos
+        const CHART_COLORS = [
+            '#58a6ff', '#f06b4f', '#a371f7', '#3fb950', '#d29a00', '#ff8d49', '#85e8ff', '#f7766e', '#8957e5', '#38b48f'
+        ];
+
+        // Função para formatar números grandes
+        function formatNumber(num) {
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'k';
+            }
+            return num;
+        }
+
+        // --- FETCH DADOS DO GITHUB ---
         async function fetchGitHubData() {
             try {
-                const [statsRes, langsRes] = await Promise.all([
-                    fetch(`${GITHUB_STATS_API}?username=${GITHUB_USER}&show_icons=true`),
-                    fetch(`${GITHUB_STATS_API}/top-langs/?username=${GITHUB_USER}&layout=compact`)
-                ]);
-                const statsText = await statsRes.text();
-                const langsText = await langsRes.text();
-                // Nota: A API retorna imagens SVG. Para um projeto real,
-                // você precisaria de um backend para processar os dados JSON.
-                console.log('Dados recebidos (SVG):', statsText.substring(0, 200));
-                updateUIWithPlaceholderData(); // Função temporária
+                // Fetch user data (for followers, following, public repos)
+                const userRes = await fetch(GITHUB_API_URL);
+                if (!userRes.ok) throw new Error(`GitHub API user error: ${userRes.statusText}`);
+                const userData = await userRes.json();
+
+                // Fetch repositories data
+                const reposRes = await fetch(GITHUB_REPOS_API_URL);
+                if (!reposRes.ok) throw new Error(`GitHub API repos error: ${reposRes.statusText}`);
+                const reposData = await reposRes.json();
+
+                // Processar dados para os gráficos e métricas
+                let totalStars = 0;
+                let totalForks = 0;
+                let languageCounts = {};
+                let repoStars = []; // Para o gráfico de atividade
+                let repoNames = [];
+                let topReposList = []; // Para a lista de top repositórios
+
+                reposData.forEach(repo => {
+                    totalStars += repo.stargazers_count;
+                    totalForks += repo.forks_count;
+
+                    // Contagem de linguagens
+                    if (repo.language) {
+                        languageCounts[repo.language] = (languageCounts[repo.language] || 0) + 1;
+                    }
+
+                    // Dados para gráfico de atividade/estrelas
+                    if (repo.stargazers_count > 0) { // Apenas repos com estrelas para o gráfico
+                        repoStars.push(repo.stargazers_count);
+                        repoNames.push(repo.name);
+                    }
+
+                    // Dados para a lista de top repositórios
+                    topReposList.push({
+                        name: repo.name,
+                        stars: repo.stargazers_count,
+                        forks: repo.forks_count,
+                        language: repo.language,
+                        url: repo.html_url
+                    });
+                });
+
+                // Ordenar top repositórios por estrelas
+                topReposList.sort((a, b) => b.stars - a.stars);
+
+                // --- ATUALIZAR UI ---
+                updateHeaderStats(userData, totalStars, reposData.length);
+                initLanguageChart(languageCounts);
+                initActivityChart(repoNames, repoStars);
+                updateQuickMetrics(userData.public_repos, totalStars, totalForks);
+                displayTopRepos(topReposList.slice(0, 5)); // Exibe os 5 top repos
+                
             } catch (error) {
-                console.error('Erro ao buscar dados:', error);
-                document.getElementById('header-stats').innerHTML = `<p class="error">Erro ao carregar dados da API.</p>`;
+                console.error('Erro ao buscar dados do GitHub:', error);
+                document.getElementById('header-stats').innerHTML = `<p class="error-message"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar dados do GitHub. Verifique o username ou sua conexão.</p>`;
+                document.getElementById('lang-chart-container').innerHTML = `<p class="error-message">Erro ao carregar gráfico de linguagens.</p>`;
+                document.getElementById('activity-chart-container').innerHTML = `<p class="error-message">Erro ao carregar gráfico de atividade.</p>`;
+                document.getElementById('quick-metrics').innerHTML = `<p class="error-message">Erro ao carregar métricas.</p>`;
+                document.getElementById('top-repos').innerHTML = `<p class="error-message">Erro ao carregar top repositórios.</p>`;
             }
         }
 
-        // 2. INICIALIZAR GRÁFICO AntV (Exemplo com dados simulados)
-        function initAntVChart() {
-            // Dados de exemplo para demonstração
-            const mockLanguageData = [
-                { language: 'JavaScript', value: 40, color: '#f1e05a' },
-                { language: 'Python', value: 25, color: '#3572A5' },
-                { language: 'HTML/CSS', value: 20, color: '#e34c26' },
-                { language: 'Outros', value: 15, color: '#6e7681' }
-            ];
-
-            // Este é um esqueleto. A implementação real do AntV requer mais configuração.
-            // Consulte: https://github.com/antvis/Infographic[citation:8]
-            const container = document.getElementById('antv-container');
-            container.innerHTML = `<p><strong>Exemplo Integração AntV:</strong> Os dados seriam renderizados aqui como um SVG interativo de alta qualidade.</p>`;
-            // Para usar: siga a documentação do AntV para criar um gráfico com mockLanguageData.
+        // --- ATUALIZAR ESTATÍSTICAS DO CABEÇALHO ---
+        function updateHeaderStats(userData, totalStars, totalRepos) {
+            document.getElementById('header-stats').innerHTML = `
+                <div class="stat-item">
+                    <span class="value">${formatNumber(totalRepos)}</span>
+                    <span class="label">Repositórios Públicos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="value">${formatNumber(totalStars)}</span>
+                    <span class="label">Total de Estrelas</span>
+                </div>
+                <div class="stat-item">
+                    <span class="value">${formatNumber(userData.followers)}</span>
+                    <span class="label">Seguidores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="value">${formatNumber(userData.following)}</span>
+                    <span class="label">Seguindo</span>
+                </div>
+            `;
         }
 
-        // 3. INICIALIZAR GRÁFICO Chart.js (Exemplo)
-        function initChartJS() {
+        // --- INICIALIZAR GRÁFICO DE LINGUAGENS (Donut Chart) ---
+        function initLanguageChart(languageCounts) {
+            const ctx = document.getElementById('languageChart').getContext('2d');
+            const labels = Object.keys(languageCounts);
+            const data = Object.values(languageCounts);
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: CHART_COLORS.slice(0, labels.length), // Usar nossas cores
+                        hoverOffset: 8,
+                        borderColor: varComputed('--bg-card'), // Cor da borda
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: varComputed('--text-primary'),
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + ' repositórios (' +
+                                                 ((context.parsed / data.reduce((a, b) => a + b, 0)) * 100).toFixed(1) + '%)';
+                                    }
+                                    return label;
+                                }
+                            },
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: varComputed('--accent-blue'),
+                            bodyColor: varComputed('--text-primary'),
+                            borderColor: varComputed('--border-color'),
+                            borderWidth: 1
+                        },
+                        datalabels: { // Plugin para mostrar labels dentro do gráfico
+                            color: '#fff',
+                            formatter: (value, context) => {
+                                const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                const percentage = (value / total * 100).toFixed(0) + '%';
+                                return percentage;
+                            },
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- INICIALIZAR GRÁFICO DE ATIVIDADE (Barra) ---
+        function initActivityChart(repoNames, repoStars) {
             const ctx = document.getElementById('activityChart').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Repo A', 'Repo B', 'Repo C', 'Repo D'],
+                    labels: repoNames.slice(0, 10), // Exibir os 10 repositórios com mais estrelas
                     datasets: [{
                         label: 'Estrelas',
-                        data: [15, 9, 4, 7],
-                        backgroundColor: 'rgba(88, 166, 255, 0.7)'
+                        data: repoStars.slice(0, 10),
+                        backgroundColor: CHART_COLORS[0],
+                        borderColor: CHART_COLORS[0],
+                        borderWidth: 1,
+                        borderRadius: 5
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', // Barras horizontais
+                    plugins: {
+                        legend: {
+                            display: false // Não precisamos da legenda para um único dataset
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: varComputed('--accent-blue'),
+                            bodyColor: varComputed('--text-primary'),
+                            borderColor: varComputed('--border-color'),
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: varComputed('--text-secondary')
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: varComputed('--text-secondary')
+                            }
+                        }
+                    }
+                }
             });
         }
 
-        // 4. ATUALIZAR A UI COM DADOS (Exemplo)
-        function updateUIWithPlaceholderData() {
-            document.getElementById('header-stats').innerHTML = `
-                <p>Repositórios Públicos: <span class="stat-highlight">10</span></p>
-                <p>Total de Estrelas: <span class="stat-highlight">42</span></p>
-            `;
+        // --- ATUALIZAR MÉTRICAS RÁPIDAS ---
+        function updateQuickMetrics(publicRepos, totalStars, totalForks) {
             document.getElementById('quick-metrics').innerHTML = `
-                <p>Commits (último ano): <strong>187</strong></p>
-                <p>Pull Requests: <strong>23</strong></p>
-                <p>Issues Resolvidas: <strong>15</strong></p>
+                <div class="stat-item">
+                    <span class="value">${formatNumber(publicRepos)}</span>
+                    <span class="label">Total de Repositórios</span>
+                </div>
+                <div class="stat-item">
+                    <span class="value">${formatNumber(totalStars)}</span>
+                    <span class="label">Estrelas Recebidas</span>
+                </div>
+                <div class="stat-item">
+                    <span class="value">${formatNumber(totalForks)}</span>
+                    <span class="label">Total de Forks</span>
+                </div>
+            `;
+            // Poderíamos adicionar commits aqui se tivéssemos a API de eventos do GitHub
+        }
+
+        // --- EXIBIR TOP REPOSITÓRIOS ---
+        function displayTopRepos(repos) {
+            const container = document.getElementById('top-repos');
+            if (repos.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">Nenhum repositório com estrelas para exibir.</p>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    ${repos.map(repo => `
+                        <li style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+                            <a href="${repo.url}" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-weight: bold; font-size: 1.1rem;">
+                                <i class="fas fa-book bookmark"></i> ${repo.name}
+                            </a>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    ${repo.language ? `<i class="fas fa-code"></i> ${repo.language}` : ''}
+                                </span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    <i class="fas fa-star" style="color:gold;"></i> ${repo.stars}
+                                </span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    <i class="fas fa-code-branch"></i> ${repo.forks}
+                                </span>
+                            </div>
+                        </li>
+                    `).join('')}
+                </ul>
             `;
         }
 
-        // INICIALIZAR TUDO QUANDO A PÁGINA CARREGAR
+        // Helper para pegar valores de variáveis CSS
+        function varComputed(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name);
+        }
+
+        // --- INICIALIZAR TUDO QUANDO A PÁGINA CARREGAR ---
         window.addEventListener('DOMContentLoaded', () => {
             fetchGitHubData();
-            initAntVChart();
-            initChartJS();
         });
     </script>
 </body>
